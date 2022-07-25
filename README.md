@@ -2,7 +2,7 @@
 WIP Chip 8 emulator written in Rust.
 
 
-##To do##
+## To do ##
 * add bounded-box collision detection.
 * scale display when window size changes.
 * clean up code.
