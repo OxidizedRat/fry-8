@@ -265,8 +265,12 @@ impl Chip8 {
                 return Ok(SDLDo::None);
             }
             Instruction::AddByte(reg, byte) => {
-                let reg_val = self.registers.get_vx(reg)?;
-                self.registers.set_vx(reg, reg_val + byte)?;
+                let reg_val = self.registers.get_vx(reg)? as u16;
+                let added_val = reg_val + byte as u16;
+                if added_val > 255 {
+                    self.registers.vf = 1;
+                }
+                self.registers.set_vx(reg, added_val as u8)?;
                 return Ok(SDLDo::None);
             }
             Instruction::LoadReg(reg1, reg2) => {
@@ -295,16 +299,15 @@ impl Chip8 {
                 return Ok(SDLDo::None);
             }
             Instruction::AddReg(reg1, reg2) => {
-                let reg1_val = self.registers.get_vx(reg1)?;
-                let reg2_val = self.registers.get_vx(reg2)?;
-
-                let (val, overflow) = reg1_val.overflowing_add(reg2_val);
-                if overflow {
-                    self.registers.set_vx(0xF, 1)?;
+                let reg1_val = self.registers.get_vx(reg1)? as u16;
+                let reg2_val = self.registers.get_vx(reg2)? as u16;
+                let added_val = reg1_val + reg2_val;
+                if added_val > 255 {
+                    self.registers.vf = 1;
                 } else {
-                    self.registers.set_vx(0xF, 0)?;
+                    self.registers.vf = 0;
                 }
-                self.registers.set_vx(reg1, val)?;
+                self.registers.set_vx(reg1, added_val as u8)?;
                 return Ok(SDLDo::None);
             }
             Instruction::SubReg(reg1, reg2) => {
