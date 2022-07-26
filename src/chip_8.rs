@@ -1,14 +1,10 @@
-use bitvec::order::Lsb0;
 use bitvec::order::Msb0;
 use bitvec::vec::BitVec;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Rect;
-use sdl2::sys::KeyCode;
 use std::collections::HashMap;
-use std::convert::Into;
 use std::fmt::Display;
 use std::fmt::Formatter;
-use std::io::Read;
 use std::u8;
 mod key_sprites;
 use key_sprites::*;
@@ -240,6 +236,7 @@ impl Chip8 {
                 self.stack.push(self.registers.program_counter);
                 self.registers.stack_pointer += 1;
                 self.registers.program_counter = addr;
+                return Ok(SDLDo::None);
             }
             Instruction::SkipEqualByte(reg1, byte) => {
                 let reg = self.registers.get_vx(reg1)?;
@@ -388,9 +385,6 @@ impl Chip8 {
                 for i in addr..(addr + size as usize) {
                     sprite_buf.push(self.memory[i]);
                 }
-                for i in sprite_buf.iter() {
-                    println!("{:#8b}", i);
-                }
                 let sprite = Sprite::new(sprite_buf, x, y)?;
                 let rects = sprite.into_rects();
                 self.display.sprites.push(sprite);
@@ -449,6 +443,7 @@ impl Chip8 {
                 if let Some(addr) = self.display.key_sprites.get(&vx) {
                     self.registers.i = *addr;
                 }
+                return Ok(SDLDo::None);
             }
             Instruction::StoreBCD(reg) => {
                 let vx = self.registers.get_vx(reg)?;
@@ -468,6 +463,7 @@ impl Chip8 {
                     self.memory[addr] = vx;
                     addr += 1;
                 }
+                return Ok(SDLDo::None);
             }
             Instruction::LoadRegI(reg) => {
                 let mut addr = self.registers.i as usize;
@@ -476,11 +472,10 @@ impl Chip8 {
                     addr += 1;
                     self.registers.set_vx(x, byte)?;
                 }
+                return Ok(SDLDo::None);
             }
-            Instruction::Invalid => todo!(),
-            _ => todo!(),
+            Instruction::Invalid => return Err(ChipError::InvalidInstruction),
         };
-        return Ok(SDLDo::None);
     }
 
     pub fn step(&mut self) -> Result<SDLDo, ChipError> {
@@ -489,7 +484,6 @@ impl Chip8 {
             Err(why) => return Err(why),
         };
         let instruction = Chip8::decode(raw_instruction);
-        println!("{:?}", instruction);
         return Ok(self.exec(instruction)?);
     }
 }
