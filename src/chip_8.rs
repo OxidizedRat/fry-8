@@ -484,6 +484,13 @@ impl Chip8 {
             Err(why) => return Err(why),
         };
         let instruction = Chip8::decode(raw_instruction);
+        println!("{:?}", instruction);
+        if self.registers.delay_timer != 0 {
+            self.registers.delay_timer -= 1;
+        }
+        if self.registers.sound_timer != 0 {
+            self.registers.sound_timer -= 1;
+        }
         return Ok(self.exec(instruction)?);
     }
 }
@@ -495,22 +502,22 @@ impl Keyboard {
     pub fn get_key(&self) -> Option<u8> {
         if let Some(key) = self.keycode {
             match key {
-                Keycode::Num0 => return Some(0x0),
                 Keycode::Num1 => return Some(0x1),
                 Keycode::Num2 => return Some(0x2),
-                Keycode::C => return Some(0xC),
                 Keycode::Num3 => return Some(0x3),
-                Keycode::Num4 => return Some(0x4),
-                Keycode::Num5 => return Some(0x5),
-                Keycode::Num6 => return Some(0x6),
-                Keycode::D => return Some(0xD),
-                Keycode::Num7 => return Some(0x7),
-                Keycode::Num8 => return Some(0x8),
-                Keycode::Num9 => return Some(0x9),
-                Keycode::E => return Some(0xE),
-                Keycode::A => return Some(0xA),
-                Keycode::B => return Some(0xB),
-                Keycode::F => return Some(0xf),
+                Keycode::Num4 => return Some(0xC),
+                Keycode::Q => return Some(0x4),
+                Keycode::W => return Some(0x5),
+                Keycode::E => return Some(0x6),
+                Keycode::R => return Some(0xD),
+                Keycode::A => return Some(0x7),
+                Keycode::S => return Some(0x8),
+                Keycode::D => return Some(0x9),
+                Keycode::F => return Some(0xE),
+                Keycode::Z => return Some(0xA),
+                Keycode::X => return Some(0x0),
+                Keycode::C => return Some(0xB),
+                Keycode::V => return Some(0xF),
                 _ => return None,
             }
         } else {

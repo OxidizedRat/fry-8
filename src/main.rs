@@ -59,6 +59,11 @@ pub fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     'running: loop {
+        //display scaling
+        let (x, y) = canvas.output_size().unwrap();
+        let scaled_x: f32 = x as f32 / 64.0;
+        let scaled_y: f32 = y as f32 / 32.0;
+        canvas.set_scale(scaled_x, scaled_y);
         let current_frametime = Instant::now();
         for event in event_pump.poll_iter() {
             match event {
@@ -73,7 +78,6 @@ pub fn main() {
                 _ => {}
             }
         }
-        canvas.set_scale(10.0, 10.0);
         match chip8.step() {
             Ok(i) => match i {
                 SDLDo::Draw(rects) => {
@@ -83,6 +87,7 @@ pub fn main() {
                 }
                 SDLDo::None => (),
                 SDLDo::ClearScreen => {
+                    canvas.set_draw_color(Color::RGB(0, 0, 0));
                     canvas.clear();
                     canvas.present();
                 }
@@ -92,6 +97,7 @@ pub fn main() {
                 break 'running;
             }
         }
+
         let elapsed = current_frametime.elapsed();
         if elapsed < frametime {
             std::thread::sleep(frametime - elapsed);
